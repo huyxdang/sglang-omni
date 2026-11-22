@@ -327,6 +327,7 @@ def test_manual_session_records_packets_and_events(fake_server):
     assert len(trace.segments(is_final=False)) == 2
     assert len(trace.segments(is_final=True)) == 1
     assert trace.completed_text == "hello world"
+    assert trace.end_s == trace.events("transcription.completed")[0].recv_s
     assert trace.commit_sent_s is not None and trace.done_sent_s >= trace.commit_sent_s
     assert check_invariants(trace) == []
 

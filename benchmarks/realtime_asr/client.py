@@ -186,8 +186,10 @@ async def _sender(
 async def _receiver(trace: SessionTrace, websocket: Any) -> None:
     while True:
         event = await _recv_event(websocket)
-        trace.received.append(ReceivedEvent(recv_s=time.perf_counter(), event=event))
-        if event.get("type") == TERMINAL_EVENT:
+        received = ReceivedEvent(recv_s=time.perf_counter(), event=event)
+        trace.received.append(received)
+        if received.type == TERMINAL_EVENT:
+            trace.end_s = received.recv_s
             return
 
 
@@ -274,7 +276,8 @@ async def run_session(
     except (OSError, RuntimeError, websockets.WebSocketException) as exc:
         trace.error = f"{type(exc).__name__}: {exc}"
     finally:
-        trace.end_s = time.perf_counter()
+        if trace.end_s is None:
+            trace.end_s = time.perf_counter()
     return trace
 
 
